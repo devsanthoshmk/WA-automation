@@ -1,0 +1,15 @@
+{
+  "name": "whatsapp-web-js",
+  "version": "1.0.0",
+  "description": "this project is to send automated messages to the previous and other department symposium paticipants to invite them to the real natinal level symposium techvista",
+  "main": "main.js",
+  "scripts": {
+    "start": "node ."
+  },
+  "author": "Santhosh M K",
+  "license": "ISC",
+  "dependencies": {
+    "qrcode-terminal": "^0.12.0",
+    "whatsapp-web.js": "^1.27.0"
+  }
+}
