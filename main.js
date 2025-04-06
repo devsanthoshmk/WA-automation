@@ -1,4 +1,4 @@
-const { Client, LocalAuth  } = require('whatsapp-web.js');
+const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 
 // Create a new client instance
@@ -31,6 +31,13 @@ client.on('qr', (qr) => {
 // });
 client.on('ready', async () => {
     
+    let media;
+    try {
+        media = MessageMedia.fromFilePath('./poster.jpg');
+    } catch (err) {
+        console.error('Error loading media file:', err);
+        return;
+    }
     
     const phoneNumber = '7904127446'; // Replace with the target phone number
     const numberId = await client.getNumberId(phoneNumber);
@@ -38,7 +45,11 @@ client.on('ready', async () => {
     if (numberId) {
         console.log(`WhatsApp ID: ${numberId._serialized}`);
 
-        client.sendMessage(numberId._serialized, 'Hi')
+        client.sendMessage(
+            numberId._serialized,
+            media,
+            { caption: 'Here is an image' }
+        )
         .then((message) => {
             console.log('Message sent successfully:', message);
         })
@@ -50,7 +61,6 @@ client.on('ready', async () => {
     }
 });
 
-917904127446@c.us
 
 
 // Start your client
