@@ -1,6 +1,20 @@
 const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
+
+const fs = require('fs');
+const csv = require('csv-parser');
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+
+const rows = [];
+fs.createReadStream('cse.csv')
+    .pipe(csv())
+    .on('data', (row) => {
+        rows.push(row);
+    })
+
+
 let send_count=0;
+const done_index=[];
 
 function capitalize(str) {
     return str
@@ -49,8 +63,9 @@ client.on('ready', async () => {
         return;
     }
     
-    const phoneNumber = '7904127446';
-    const name = capitalize('santhosh m k');
+  for (const [index, row] of rows.entries()) {
+    const phoneNumber = row['CONTACT NUMBER'];
+    const name = capitalize(row["NAME"]);
     const numberId = await client.getNumberId(phoneNumber);
 
     if (numberId) {
@@ -64,11 +79,12 @@ client.on('ready', async () => {
 
 Thanks a ton for being part of Cognit-25 — we hope you had an amazing time!
 
-We’re back with another exciting event at MNM Jain Engineering College!
+We’re back with another exciting event at *MNM Jain Engineering College!*
 
-🔥 TechVista 2025 – A National Level Symposium  Of the Computer Science and business systems department🔥
+🔥 *\`TechVista 2025\`* – A National Level Technical Symposium  Of the Computer Science and business systems department🔥
 📅 Date: 9th April 2025
 📍 Venue: MNM Jain Engineering College, Chennai
+📞 Vice President: +918608306016 
 
 Don’t miss out on the fun, learning, and competition!
 Register Now: mnm-jec-techvista.pages.dev (or) copy paste the link below in a browser
@@ -77,24 +93,18 @@ IG: instagram.com/techvista2k25
 Let’s make it epic — again! See you there!` 
                 }
             )
-            send_count+=1;
             // console.log('Message sent successfully:');
 
 
-    } catch (error) {
-            console.error(`Error sending message(for ${numberId._serialized}):`, error);
-        };
-    
-    // sending like sepreratly
-    try{
+
         await client.sendMessage(numberId._serialized, 'mnm-jec-techvista.pages.dev')
         // console.log('Additional text message sent successfully.')
-    } catch(error) {
-        console.error(`Error sending link(for ${numberId._serialized}) :`, error);
-    }
-    try{
         await client.sendMessage(numberId._serialized, 'instagram.com/techvista2k25')
+        await client.sendMessage(numberId._serialized, 'https://maps.app.goo.gl/1LrG6yUYmU6aW8Xj8')
+
         // console.log('Additional text message sent successfully.')
+        send_count+=1;
+        done_index.push(index)
     } catch(error) {
         console.error(`Error sending link(for ${numberId._serialized}) :`, error);
     }
@@ -104,7 +114,22 @@ Let’s make it epic — again! See you there!`
         console.log('The phone number is not registered on WhatsApp.');
     }
 
+  }
 } finally {
+        console.log(done_index,rows)
+        const csvWriter = createCsvWriter({
+        path: 'cse.csv', 
+        header: [
+            { id: 'NAME', title: 'NAME' },
+            { id: 'CONTACT NUMBER', title: 'CONTACT NUMBER' }
+        ]
+        });
+    
+        csvWriter.writeRecords(rows.filter((_, index) => !done_index.includes(index)))
+        .then(() => {
+            console.log('Row deleted and CSV updated!');
+        });
+    
     console.log(`successfully sent megs to ${send_count}`)
 }
 });
