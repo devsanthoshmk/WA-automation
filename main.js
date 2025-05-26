@@ -5,8 +5,9 @@ const fs = require('fs');
 const csv = require('csv-parser');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
+const fileName = 'DEVDASH.csv'
 const rows = [];
-fs.createReadStream('cse.csv')
+fs.createReadStream(fileName)
     .pipe(csv())
     .on('data', (row) => {
         rows.push(row);
@@ -55,54 +56,37 @@ client.on('qr', (qr) => {
 // });
 client.on('ready', async () => {
  try{
-    let media;
-    try {
-        media = MessageMedia.fromFilePath('./poster.jpg');
-    } catch (err) {
-        console.error('Error loading media file:', err);
-        return;
-    }
+    // let media;
+    // try {
+    //     media = MessageMedia.fromFilePath('./poster.jpg');
+    // } catch (err) {
+    //     console.error('Error loading media file:', err);
+    //     return;
+    // }
     
   for (const [index, row] of rows.entries()) {
-    const phoneNumber = row['CONTACT NUMBER'];
-    const name = capitalize(row["NAME"]);
-    const numberId = await client.getNumberId(phoneNumber);
-
+    const phoneNumber = row['Phone Number'];
+    const name = capitalize(row["Name"]);
+    try {
+        numberId = await client.getNumberId(phoneNumber);
+    } catch (err) {
+        console.error(`Error fetching numberId for ${phoneNumber}:`, err);
+        continue; // Skip this row and continue with the next one
+    }
     if (numberId) {
         // console.log(`WhatsApp ID: ${numberId._serialized}`);
         try{
-            await client.sendMessage(
-                numberId._serialized,
-                media,
-                { 
-                caption: `Hey ${name}!
+            await client.sendMessage(numberId._serialized,`Hi ${name},
+\`First of all Thank You Attending Techvista😇\`
+You have successfully registered *DEVDASH*. If not please ignore.
+Participants please fill the below form and join this group to participate in this *DEVDASH* (If you can't open please copy paste in browser)`)
+            await client.sendMessage(numberId._serialized,`https://forms.gle/gmiyHBrVXGnp47iy9`)
+            await client.sendMessage(numberId._serialized,`https://chat.whatsapp.com/L9pADxjz5Ow00gNQpkEzoW`)
+            await client.sendMessage(numberId._serialized,`If you don't have laptop kindly inform it and your requirements(like python,js,java or any libraries too which you will use to code here) to *Event Head*(number given below). If you have lap then make sure you *only just set up* your project `)
+            await client.sendMessage(numberId._serialized,`7904127446`)
 
-Thanks a ton for being part of Cognit-25 — we hope you had an amazing time!
-
-We’re back with another exciting event at *MNM Jain Engineering College!*
-
-🔥 *\`TechVista 2025\`* – A National Level Technical Symposium  Of the Computer Science and business systems department🔥
-📅 Date: 9th April 2025
-📍 Venue: MNM Jain Engineering College, Chennai
-📞 Vice President: +918608306016 
-
-Don’t miss out on the fun, learning, and competition!
-Register Now: mnm-jec-techvista.pages.dev (or) copy paste the link below in a browser
-IG: instagram.com/techvista2k25
-
-Let’s make it epic — again! See you there!` 
-                }
-            )
-            // console.log('Message sent successfully:');
-
-
-
-        await client.sendMessage(numberId._serialized, 'mnm-jec-techvista.pages.dev')
-        // console.log('Additional text message sent successfully.')
-        await client.sendMessage(numberId._serialized, 'instagram.com/techvista2k25')
-        await client.sendMessage(numberId._serialized, 'https://maps.app.goo.gl/1LrG6yUYmU6aW8Xj8')
-
-        // console.log('Additional text message sent successfully.')
+            
+//            
         send_count+=1;
         done_index.push(index)
     } catch(error) {
@@ -115,20 +99,21 @@ Let’s make it epic — again! See you there!`
     }
 
   }
-} finally {
-        console.log(done_index,rows)
-        const csvWriter = createCsvWriter({
-        path: 'cse.csv', 
+  } finally {
+    console.log(done_index)
+    const csvWriter = createCsvWriter({
+        path: fileName, 
         header: [
             { id: 'NAME', title: 'NAME' },
             { id: 'CONTACT NUMBER', title: 'CONTACT NUMBER' }
         ]
         });
-    
-        csvWriter.writeRecords(rows.filter((_, index) => !done_index.includes(index)))
-        .then(() => {
-            console.log('Row deleted and CSV updated!');
-        });
+
+    const problematic = rows.filter((_, index) => !done_index.includes(index));
+    csvWriter.writeRecords(problematic)
+    .then(() => {
+        console.log('Row deleted and CSV updated!',problematic);
+    });
     
     console.log(`successfully sent megs to ${send_count}`)
 }
