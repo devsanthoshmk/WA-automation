@@ -12,7 +12,7 @@ fs.createReadStream(fileName)
     .on('data', (row) => {
         rows.push(row);
     })
-
+ 
 
 let send_count=0;
 const done_index=[];
